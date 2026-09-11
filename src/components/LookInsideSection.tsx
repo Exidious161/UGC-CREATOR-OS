@@ -169,23 +169,23 @@ function PageFace({ page }: { page: Page }) {
     case "cover":
       return (
         <PageFrame>
-          <p className="max-w-[60%] text-[0.55rem] font-bold uppercase tracking-[0.12em] text-accent">
+          <p className="max-w-[60%] text-[0.48rem] font-bold uppercase tracking-[0.1em] text-accent">
             The Complete System
             <br />
             for UGC Creators
           </p>
-          <h3 className="mt-4 text-[2.1rem] font-bold leading-[0.92] tracking-tight">
+          <h3 className="mt-3 text-[1.85rem] font-bold leading-[0.86] tracking-tight">
             <span className="text-accent">UGC</span>
             <br />
             <span className="text-accent">Creator</span>
             <br />
             OS
           </h3>
-          <div className="mt-3 h-[3px] w-10 bg-accent" />
-          <p className="mt-4 text-[0.6rem] font-bold uppercase tracking-[0.1em] text-accent">
+          <div className="mt-2 h-[3px] w-10 bg-accent" />
+          <p className="mt-3 text-[0.52rem] font-bold uppercase tracking-[0.08em] text-accent">
             The Practical UGC Playbook
           </p>
-          <p className="mt-3 text-[0.68rem] leading-relaxed text-foreground/70">
+          <p className="mt-2 text-[0.56rem] leading-snug text-foreground/70">
             Create better content.
             <br />
             Build your portfolio.
@@ -230,20 +230,20 @@ function PageFace({ page }: { page: Page }) {
     case "divider":
       return (
         <PageFrame dark footer={String(page.page).padStart(3, "0")} contents>
-          <span className="mb-4 flex h-9 w-9 items-center justify-center rounded-full bg-accent text-white">
+          <span className="mb-3 flex h-8 w-8 items-center justify-center rounded-full bg-accent text-white">
             <ChapterIconGlyph icon={page.icon} />
           </span>
-          <p className="text-[0.55rem] font-bold uppercase tracking-[0.14em] text-chapter-gold">
+          <p className="text-[0.5rem] font-bold uppercase tracking-[0.12em] text-chapter-gold">
             {page.chapter}
           </p>
           <span className="pointer-events-none absolute right-4 top-4 text-[3.5rem] font-bold leading-none text-white/[0.06]">
             {page.num}
           </span>
-          <h3 className="mt-3 text-[1.2rem] font-bold leading-[1.05] tracking-tight text-white">{page.title}</h3>
-          <p className="mt-3 text-[0.6rem] italic leading-relaxed text-white/55">{page.subtitle}</p>
-          <div className="mt-auto grid grid-cols-2 gap-x-3 gap-y-2 border-t border-white/10 pt-3">
+          <h3 className="mt-2 text-[1.05rem] font-bold leading-[1.08] tracking-tight text-white">{page.title}</h3>
+          <p className="mt-2 text-[0.52rem] italic leading-snug text-white/55">{page.subtitle}</p>
+          <div className="mt-2 grid grid-cols-2 gap-x-3 gap-y-1.5 border-t border-white/10 pt-2">
             {page.topics.map((t) => (
-              <p key={t} className="text-[0.55rem] font-semibold leading-snug text-white/70">
+              <p key={t} className="text-[0.48rem] font-semibold leading-snug text-white/70">
                 {t}
               </p>
             ))}
@@ -382,12 +382,22 @@ export default function LookInsideSection() {
               <button
                 key={i}
                 onClick={() => setLightboxIndex(i)}
-                className="group relative aspect-[3/4] w-[190px] shrink-0 snap-start overflow-hidden rounded-[8px] shadow-[0_20px_45px_-20px_rgba(0,0,0,0.6)] outline outline-1 outline-white/10 transition-transform duration-300 ease-out hover:-translate-y-2 hover:outline-accent/50 sm:w-[220px]"
+                className="group relative aspect-[3/4] w-[230px] shrink-0 snap-start overflow-hidden rounded-[10px] shadow-[0_25px_55px_-20px_rgba(0,0,0,0.65)] outline outline-1 outline-white/10 transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-3 hover:scale-[1.03] hover:shadow-[0_35px_70px_-18px_rgba(201,84,50,0.5)] hover:outline-accent/60 sm:w-[280px] lg:w-[320px]"
                 aria-label={`Open page ${i + 1} of ${PAGES.length}`}
               >
-                <PageFace page={page} />
-                <span className="pointer-events-none absolute inset-0 flex items-center justify-center bg-black/0 opacity-0 transition-all duration-300 group-hover:bg-black/30 group-hover:opacity-100">
-                  <span className="rounded-full bg-white px-3 py-1.5 text-[0.6rem] font-semibold uppercase tracking-wide text-foreground">
+                {/* Base design is authored at 220x293 — scaled up per breakpoint so text/spacing stay
+                    proportionally sharp instead of looking sparse inside a much bigger card. */}
+                <div
+                  className="absolute left-0 top-0 h-[293px] w-[220px] origin-top-left scale-[1.0455] sm:scale-[1.2727] lg:scale-[1.4545]"
+                >
+                  <PageFace page={page} />
+                </div>
+
+                {/* Diagonal shine sweep on hover */}
+                <span className="pointer-events-none absolute inset-0 -translate-x-full -skew-x-12 bg-gradient-to-r from-transparent via-white/25 to-transparent opacity-0 transition-all duration-700 ease-out group-hover:translate-x-full group-hover:opacity-100" />
+
+                <span className="pointer-events-none absolute inset-0 flex items-center justify-center bg-black/0 opacity-0 transition-all duration-300 group-hover:bg-black/35 group-hover:opacity-100">
+                  <span className="scale-90 rounded-full bg-white px-4 py-2 text-xs font-semibold uppercase tracking-wide text-foreground shadow-lg transition-transform duration-300 group-hover:scale-100">
                     View page
                   </span>
                 </span>
@@ -420,7 +430,7 @@ export default function LookInsideSection() {
         <div
           role="dialog"
           aria-modal="true"
-          className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 p-6 backdrop-blur-sm"
+          className="fixed inset-0 z-[100] flex animate-[lightboxFade_0.25s_ease-out] items-center justify-center bg-black/80 p-6 backdrop-blur-sm"
           onClick={() => setLightboxIndex(null)}
         >
           <button
@@ -443,8 +453,9 @@ export default function LookInsideSection() {
           </button>
 
           <div
+            key={lightboxIndex}
             onClick={(e) => e.stopPropagation()}
-            className="aspect-[3/4] w-full max-w-[380px] overflow-hidden rounded-xl shadow-2xl transition-transform duration-300"
+            className="aspect-[3/4] w-full max-w-[380px] origin-center animate-[lightboxZoom_0.3s_cubic-bezier(0.16,1,0.3,1)] overflow-hidden rounded-xl shadow-[0_40px_100px_-20px_rgba(0,0,0,0.7)] sm:max-w-[420px] lg:max-w-[460px]"
           >
             <PageFace page={PAGES[lightboxIndex]} />
           </div>
@@ -465,6 +476,17 @@ export default function LookInsideSection() {
           </span>
         </div>
       )}
+
+      <style>{`
+        @keyframes lightboxFade {
+          from { opacity: 0; }
+          to { opacity: 1; }
+        }
+        @keyframes lightboxZoom {
+          from { opacity: 0; transform: scale(0.92) translateY(12px); }
+          to { opacity: 1; transform: scale(1) translateY(0); }
+        }
+      `}</style>
     </section>
   );
 }
