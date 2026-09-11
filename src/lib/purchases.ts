@@ -126,38 +126,56 @@ export interface QueryPurchasesResult {
   totalPages: number;
 }
 
-/** Every filter/sort value is validated against a fixed allowlist before it ever reaches SQL — none of it is string-concatenated. */
+/**
+ * Every filter/sort value is validated against a fixed allowlist before it
+ * ever reaches SQL — none of it is string-concatenated.
+ *
+ * Deliberately avoids postgres.js's conditional-fragment composition
+ * (`sql\`AND ...\` : sql\`\`` nested inside another sql\`\`\`) — combining
+ * multiple such fragments in one query triggered an internal RangeError in
+ * the driver's parameter encoding ("offset is out of range"), which surfaced
+ * as the whole dashboard hanging for minutes before failing. Instead, the
+ * search/status filters are always present in the query text as fixed
+ * `$n = '' OR ...` no-ops, and sort direction is a plain JS branch between
+ * two literal query strings — every value still goes through normal bound
+ * parameters, just with zero dynamic SQL-fragment assembly.
+ */
 export async function queryPurchases(input: QueryPurchasesInput): Promise<QueryPurchasesResult> {
   const sql = getDb();
 
   const page = Math.max(1, input.page ?? 1);
   const pageSize = Math.min(100, Math.max(1, input.pageSize ?? 20));
   const offset = (page - 1) * pageSize;
-  const search = input.search?.trim();
-  const status = input.status && input.status !== "all" ? input.status : null;
-  const orderClause = input.sort === "oldest" ? sql`purchased_at ASC` : sql`purchased_at DESC`;
+  const search = input.search?.trim() ?? "";
+  const searchPattern = `%${search}%`;
+  const status = input.status && input.status !== "all" ? input.status : "";
 
-  const searchClause = search
-    ? sql`AND (
-        customer_name ILIKE ${"%" + search + "%"}
-        OR customer_email ILIKE ${"%" + search + "%"}
-        OR razorpay_payment_id ILIKE ${"%" + search + "%"}
-        OR razorpay_order_id ILIKE ${"%" + search + "%"}
-      )`
-    : sql``;
+  const rowsQuery =
+    input.sort === "oldest"
+      ? sql<Purchase[]>`
+          SELECT * FROM purchases
+          WHERE (${search} = '' OR customer_name ILIKE ${searchPattern} OR customer_email ILIKE ${searchPattern}
+                 OR razorpay_payment_id ILIKE ${searchPattern} OR razorpay_order_id ILIKE ${searchPattern})
+            AND (${status} = '' OR status = ${status})
+          ORDER BY purchased_at ASC
+          LIMIT ${pageSize} OFFSET ${offset}
+        `
+      : sql<Purchase[]>`
+          SELECT * FROM purchases
+          WHERE (${search} = '' OR customer_name ILIKE ${searchPattern} OR customer_email ILIKE ${searchPattern}
+                 OR razorpay_payment_id ILIKE ${searchPattern} OR razorpay_order_id ILIKE ${searchPattern})
+            AND (${status} = '' OR status = ${status})
+          ORDER BY purchased_at DESC
+          LIMIT ${pageSize} OFFSET ${offset}
+        `;
 
-  const statusClause = status ? sql`AND status = ${status}` : sql``;
-
-  const rows = await sql<Purchase[]>`
-    SELECT * FROM purchases
-    WHERE 1 = 1 ${searchClause} ${statusClause}
-    ORDER BY ${orderClause}
-    LIMIT ${pageSize} OFFSET ${offset}
-  `;
+  const rows = await rowsQuery;
 
   const [countRow] = await sql<{ count: string }[]>`
     SELECT COUNT(*) AS count FROM purchases
-    WHERE 1 = 1 ${searchClause} ${statusClause}
+    WHERE (${search} = '' OR customer_name ILIKE ${searchPattern} OR customer_email ILIKE ${searchPattern}
+           OR razorpay_payment_id ILIKE ${searchPattern} OR razorpay_order_id ILIKE ${searchPattern})
+      AND (${status} = '' OR status = ${status})
   `;
 
   const total = Number(countRow.count);

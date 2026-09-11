@@ -78,10 +78,29 @@ export default async function AdminPurchasesPage({ searchParams }: AdminPurchase
   const sort = (first(params.sort) as PurchaseSort | undefined) ?? "newest";
   const page = Number(first(params.page) ?? "1") || 1;
 
-  const [stats, result] = await Promise.all([
-    getPurchaseStats(),
-    queryPurchases({ search, status: statusParam, sort, page, pageSize: 20 }),
-  ]);
+  let stats, result;
+  try {
+    [stats, result] = await Promise.all([
+      getPurchaseStats(),
+      queryPurchases({ search, status: statusParam, sort, page, pageSize: 20 }),
+    ]);
+  } catch (err) {
+    console.error("admin/purchases: query failed:", err);
+    return (
+      <main className="flex min-h-screen items-center justify-center bg-background-alt px-6 text-center">
+        <div className="max-w-sm">
+          <p className="kicker mb-4 flex items-center justify-center gap-3">
+            <span className="ornament" />
+            Admin
+          </p>
+          <h1 className="text-xl font-bold text-foreground">Couldn&rsquo;t load purchases</h1>
+          <p className="mt-3 text-sm text-foreground/60">
+            The database didn&rsquo;t respond in time. This is usually a transient network hiccup — reload to try again.
+          </p>
+        </div>
+      </main>
+    );
+  }
 
   const currentFilters = { q: search || undefined, status: statusParam === "all" ? undefined : statusParam, sort };
 
