@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import Reveal from "./Reveal";
-import { trackBeginCheckout } from "@/lib/analytics";
+import BuyButton from "./BuyButton";
 
 const INCLUDED = [
   "Complete UGC Creator OS PDF",
@@ -51,16 +51,12 @@ export default function FinalCTA() {
             </Reveal>
 
             <Reveal delay={160}>
-              <button
-                onClick={(e) => {
-                  e.preventDefault();
-                  trackBeginCheckout("pricing_section");
-                  window.location.href = "https://razorpay.com/@ugccreatoros";
-                }}
+              <BuyButton
+                source="pricing_section"
                 className="mt-10 inline-flex h-13 items-center justify-center rounded-full bg-accent px-10 text-sm font-semibold text-white shadow-[0_10px_30px_-10px_rgba(201,84,50,0.6)] transition-transform duration-300 hover:scale-[1.03] active:scale-[0.98]"
               >
                 Get the UGC Creator OS →
-              </button>
+              </BuyButton>
             </Reveal>
           </div>
         </div>
@@ -82,16 +78,12 @@ export default function FinalCTA() {
           </Reveal>
 
           <Reveal delay={100} className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
-            <button
-              onClick={(e) => {
-                e.preventDefault();
-                trackBeginCheckout("final_cta");
-                window.location.href = "https://razorpay.com/@ugccreatoros";
-              }}
+            <BuyButton
+              source="final_cta"
               className="inline-flex h-13 w-full items-center justify-center rounded-full bg-accent px-8 text-sm font-semibold text-white shadow-md transition-transform duration-300 hover:scale-[1.03] active:scale-[0.98] sm:w-auto"
             >
               Get the UGC Creator OS →
-            </button>
+            </BuyButton>
             <Link
               href="/#what-inside"
               className="inline-flex h-13 w-full items-center justify-center rounded-full border border-border bg-white px-8 text-sm font-semibold text-foreground/70 transition-colors duration-300 hover:text-foreground sm:w-auto"

@@ -1,8 +1,8 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { trackBeginCheckout } from "@/lib/analytics";
 import BookCover from "./BookCover";
+import BuyButton from "./BuyButton";
 
 export default function Hero() {
   const visualRef = useRef<HTMLDivElement>(null);
@@ -56,19 +56,15 @@ export default function Hero() {
                 </p>
               </div>
 
-              <button
-                onClick={(e) => {
-                  e.preventDefault();
-                  trackBeginCheckout("hero");
-                  window.location.href = "https://razorpay.com/@ugccreatoros";
-                }}
+              <BuyButton
+                source="hero"
                 className="group relative inline-flex h-13 items-center justify-center overflow-hidden rounded-full bg-accent px-8 py-4 text-sm font-semibold text-white shadow-[0_10px_30px_-10px_rgba(201,84,50,0.6)] transition-transform duration-300 hover:scale-[1.03] active:scale-[0.98]"
               >
                 Get the UGC Creator OS
                 <span className="ml-2 inline-block transition-transform duration-300 group-hover:translate-x-1">
                   →
                 </span>
-              </button>
+              </BuyButton>
             </div>
 
             <div className="mt-8 flex flex-wrap items-center gap-x-6 gap-y-2 text-xs uppercase tracking-[0.08em] text-foreground/45">

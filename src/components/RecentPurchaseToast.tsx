@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { usePathname } from "next/navigation";
 
 // Swap this for a real feed later (e.g. poll an API backed by your Razorpay
 // webhook) — the component doesn't care where entries come from, it just
@@ -25,6 +26,8 @@ function randomBetween(min: number, max: number) {
 }
 
 export default function RecentPurchaseToast() {
+  const pathname = usePathname();
+  const isAdminRoute = pathname?.startsWith("/admin");
   const [entry, setEntry] = useState<typeof RECENT_ACTIVITY[number] | null>(null);
   const [visible, setVisible] = useState(false);
   const dismissedRef = useRef(false);
@@ -32,6 +35,7 @@ export default function RecentPurchaseToast() {
   const poolRef = useRef<number[]>([]);
 
   useEffect(() => {
+    if (isAdminRoute) return;
     if (sessionStorage.getItem("ugc_toast_dismissed") === "1") {
       dismissedRef.current = true;
       return;
@@ -69,7 +73,7 @@ export default function RecentPurchaseToast() {
       clearTimeout(hideTimer);
       clearTimeout(nextTimer);
     };
-  }, []);
+  }, [isAdminRoute]);
 
   const dismiss = () => {
     setVisible(false);
@@ -77,7 +81,7 @@ export default function RecentPurchaseToast() {
     sessionStorage.setItem("ugc_toast_dismissed", "1");
   };
 
-  if (!entry) return null;
+  if (isAdminRoute || !entry) return null;
 
   return (
     <div
