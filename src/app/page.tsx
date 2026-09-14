@@ -1,3 +1,4 @@
+import CouponBanner from "@/components/CouponBanner";
 import Navbar from "@/components/Navbar";
 import Hero from "@/components/Hero";
 import ProblemSection from "@/components/ProblemSection";
@@ -14,6 +15,7 @@ import FinalCTA from "@/components/FinalCTA";
 export default function Home() {
   return (
     <>
+      <CouponBanner />
       <Navbar />
       <Hero />
       <ProblemSection />
