@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { validatePaymentVerification } from "razorpay/dist/utils/razorpay-utils";
 import { getRazorpayClient, PRODUCT_AMOUNT_PAISE, PRODUCT_CURRENCY } from "@/lib/razorpay";
+import { applyDiscount, findCoupon } from "@/lib/coupons";
 import { createPurchaseToken } from "@/lib/purchaseToken";
 import { recordPurchase } from "@/lib/purchases";
 
@@ -62,6 +63,7 @@ export async function POST(req: Request) {
   let customerName: string | null;
   let paymentAmount: number;
   let paymentStatus: string;
+  let couponCode: string | null;
 
   try {
     const payment = await getRazorpayClient().payments.fetch(razorpay_payment_id);
@@ -72,7 +74,20 @@ export async function POST(req: Request) {
     if (payment.status !== "captured") {
       return NextResponse.json({ success: false, error: `Payment not captured (status: ${payment.status}).` }, { status: 400 });
     }
-    if (Number(payment.amount) !== PRODUCT_AMOUNT_PAISE || payment.currency !== PRODUCT_CURRENCY) {
+
+    // A coupon can only ever lower the order's amount below the fixed product
+    // price, and only to one of the fixed percentOff values in @/lib/coupons
+    // — the order's notes just say *which* coupon was used at creation time,
+    // they don't set the amount themselves, so this can't be used to smuggle
+    // an arbitrary discount into a real order.
+    const order = await getRazorpayClient().orders.fetch(razorpay_order_id);
+    const coupon = findCoupon(typeof order.notes?.couponCode === "string" ? order.notes.couponCode : null);
+    const expectedAmount = coupon ? applyDiscount(PRODUCT_AMOUNT_PAISE, coupon.percentOff) : PRODUCT_AMOUNT_PAISE;
+
+    if (Number(order.amount) !== expectedAmount || order.currency !== PRODUCT_CURRENCY) {
+      return NextResponse.json({ success: false, error: "Order amount mismatch." }, { status: 400 });
+    }
+    if (Number(payment.amount) !== Number(order.amount) || payment.currency !== PRODUCT_CURRENCY) {
       return NextResponse.json({ success: false, error: "Amount/currency mismatch." }, { status: 400 });
     }
 
@@ -80,6 +95,7 @@ export async function POST(req: Request) {
     customerName = payment.card?.name || null;
     paymentAmount = Number(payment.amount);
     paymentStatus = payment.status;
+    couponCode = coupon?.code ?? null;
   } catch (err) {
     console.error("verify: payment fetch failed:", err);
     return NextResponse.json({ success: false, error: "Could not confirm payment with Razorpay." }, { status: 502 });
@@ -98,6 +114,8 @@ export async function POST(req: Request) {
       status: paymentStatus,
       customerName,
       customerEmail,
+      couponCode,
+      originalAmount: PRODUCT_AMOUNT_PAISE,
     });
   } catch (err) {
     console.error("verify: recordPurchase failed:", err);

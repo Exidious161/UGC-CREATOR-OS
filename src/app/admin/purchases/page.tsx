@@ -197,6 +197,7 @@ export default async function AdminPurchasesPage({ searchParams }: AdminPurchase
                 <th className="px-4 py-3 font-medium">Payment ID</th>
                 <th className="px-4 py-3 font-medium">Order ID</th>
                 <th className="px-4 py-3 font-medium">Amount</th>
+                <th className="px-4 py-3 font-medium">Coupon</th>
                 <th className="px-4 py-3 font-medium">Status</th>
                 <th className="px-4 py-3 font-medium">Purchased At</th>
                 <th className="px-4 py-3 font-medium">Downloads</th>
@@ -206,7 +207,7 @@ export default async function AdminPurchasesPage({ searchParams }: AdminPurchase
             <tbody>
               {result.rows.length === 0 && (
                 <tr>
-                  <td colSpan={9} className="px-4 py-10 text-center text-foreground/45">
+                  <td colSpan={10} className="px-4 py-10 text-center text-foreground/45">
                     No purchases found.
                   </td>
                 </tr>
@@ -217,7 +218,23 @@ export default async function AdminPurchasesPage({ searchParams }: AdminPurchase
                   <td className="px-4 py-3 text-foreground/70">{p.customerEmail ?? "—"}</td>
                   <td className="px-4 py-3 font-mono text-xs text-foreground/60">{p.razorpayPaymentId}</td>
                   <td className="px-4 py-3 font-mono text-xs text-foreground/60">{p.razorpayOrderId}</td>
-                  <td className="px-4 py-3 text-foreground/85">{formatCurrency(p.amount, p.currency)}</td>
+                  <td className="px-4 py-3 text-foreground/85">
+                    {formatCurrency(p.amount, p.currency)}
+                    {p.originalAmount && p.originalAmount !== p.amount && (
+                      <span className="ml-1.5 text-xs text-foreground/40 line-through">
+                        {formatCurrency(p.originalAmount, p.currency)}
+                      </span>
+                    )}
+                  </td>
+                  <td className="px-4 py-3">
+                    {p.couponCode ? (
+                      <span className="rounded-full bg-accent/10 px-2.5 py-1 text-xs font-semibold text-accent">
+                        {p.couponCode}
+                      </span>
+                    ) : (
+                      <span className="text-foreground/40">—</span>
+                    )}
+                  </td>
                   <td className="px-4 py-3">
                     <span className={`rounded-full px-2.5 py-1 text-xs font-semibold ${statusBadgeClass(p.status)}`}>
                       {p.status}

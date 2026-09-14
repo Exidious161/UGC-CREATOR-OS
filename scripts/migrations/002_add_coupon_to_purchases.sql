@@ -1,0 +1,2 @@
+ALTER TABLE purchases ADD COLUMN IF NOT EXISTS coupon_code TEXT;
+ALTER TABLE purchases ADD COLUMN IF NOT EXISTS original_amount INTEGER;

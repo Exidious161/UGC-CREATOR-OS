@@ -36,7 +36,7 @@ export function usePurchase() {
   const router = useRouter();
 
   const startPurchase = useCallback(
-    async (source: string) => {
+    async (source: string, couponCode?: string) => {
       if (purchaseInFlight) return;
       purchaseInFlight = true;
       setStatus("loading");
@@ -47,7 +47,11 @@ export function usePurchase() {
 
         await loadRazorpayScript();
 
-        const orderRes = await fetch("/api/payment/create-order", { method: "POST" });
+        const orderRes = await fetch("/api/payment/create-order", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ couponCode }),
+        });
         if (!orderRes.ok) throw new Error("Could not start checkout. Please try again.");
         const order: CreateOrderResponse = await orderRes.json();
 

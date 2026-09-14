@@ -10,6 +10,8 @@ export interface Purchase {
   amount: number;
   currency: string;
   status: string;
+  couponCode: string | null;
+  originalAmount: number | null;
   purchasedAt: string;
   downloadCount: number;
   lastDownloadedAt: string | null;
@@ -25,6 +27,8 @@ export interface RecordPurchaseInput {
   status: string;
   customerName: string | null;
   customerEmail: string | null;
+  couponCode: string | null;
+  originalAmount: number | null;
 }
 
 /**
@@ -39,10 +43,12 @@ export async function recordPurchase(input: RecordPurchaseInput): Promise<Purcha
 
   const inserted = await sql<Purchase[]>`
     INSERT INTO purchases (
-      id, customer_name, customer_email, razorpay_payment_id, razorpay_order_id, amount, currency, status
+      id, customer_name, customer_email, razorpay_payment_id, razorpay_order_id, amount, currency, status,
+      coupon_code, original_amount
     ) VALUES (
       ${randomUUID()}, ${input.customerName}, ${input.customerEmail}, ${input.paymentId},
-      ${input.orderId}, ${input.amount}, ${input.currency}, ${input.status}
+      ${input.orderId}, ${input.amount}, ${input.currency}, ${input.status},
+      ${input.couponCode}, ${input.originalAmount}
     )
     ON CONFLICT (razorpay_payment_id) DO NOTHING
     RETURNING *
